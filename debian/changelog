@@ -1,3 +1,9 @@
+nyancat (1.5.2.ufox1-1) unstable; urgency=medium
+
+  * Just changing the version number, it's actually 1.5.2.ufox1-1.
+
+ -- Nate Bowen <nate@natebowen.com>  Sun, 03 Jan 2021 02:51:39 -0800
+
 nyancat (1.5.1.ufox1-1) unstable; urgency=medium
 
   * Adding Swatch beat command line option (-b)
