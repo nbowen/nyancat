@@ -113,6 +113,11 @@ int telnet = 0;
 int show_counter = 1;
 
 /*
+ * Whether or not to show the counter in SwatchBeats
+ */
+int show_beat_counter = 0;
+
+/*
  * Number of frames to show before quitting
  * or 0 to repeat forever (default)
  */
@@ -333,6 +338,7 @@ void usage(char * argv[]) {
 			" -i --intro      \033[3mShow the introduction / about information at startup.\033[0m\n"
 			" -t --telnet     \033[3mTelnet mode.\033[0m\n"
 			" -n --no-counter \033[3mDo not display the timer\033[0m\n"
+			" -b --beats      \033[3mDisplay timer in Swatch Internet Time .beats\033[0m\n"
 			" -s --no-title   \033[3mDo not set the titlebar text\033[0m\n"
 			" -e --no-clear   \033[3mDo not clear the display between frames\033[0m\n"
 			" -f --frames     \033[3mDisplay the requested number of frames, then quit\033[0m\n"
@@ -367,6 +373,7 @@ int main(int argc, char ** argv) {
 		{"intro",      no_argument,       0, 'i'},
 		{"skip-intro", no_argument,       0, 'I'},
 		{"no-counter", no_argument,       0, 'n'},
+		{"beats",      no_argument,       0, 'b'},
 		{"no-title",   no_argument,       0, 's'},
 		{"no-clear",   no_argument,       0, 'e'},
 		{"frames",     required_argument, 0, 'f'},
@@ -381,7 +388,7 @@ int main(int argc, char ** argv) {
 
 	/* Process arguments */
 	int index, c;
-	while ((c = getopt_long(argc, argv, "eshiItnf:r:R:c:C:W:H:", long_opts, &index)) != -1) {
+	while ((c = getopt_long(argc, argv, "eshiItnbf:r:R:c:C:W:H:", long_opts, &index)) != -1) {
 		if (!c) {
 			if (long_opts[index].flag == 0) {
 				c = long_opts[index].val;
@@ -409,6 +416,9 @@ int main(int argc, char ** argv) {
 				break;
 			case 'n':
 				show_counter = 0;
+				break;
+			case 'b':
+				show_beat_counter = 1;
 				break;
 			case 'f':
 				frame_count = atoi(optarg);
@@ -873,6 +883,10 @@ int main(int argc, char ** argv) {
 			/* Get the current time for the "You have nyaned..." string */
 			time(&current);
 			double diff = difftime(current, start);
+
+			if (show_beat_counter) {
+				diff = diff / 86.4;
+			}
 			/* Now count the length of the time difference so we can center */
 			int nLen = digits((int)diff);
 			/*
@@ -892,7 +906,14 @@ int main(int argc, char ** argv) {
 			 * The \033[0m prevents the Apple ][ from flipping everything, but
 			 * makes the whole nyancat less bright on the vt220
 			 */
-			printf("\033[1;37mYou have nyaned for %0.0f seconds!\033[J\033[0m", diff);
+			const char *time_units = "seconds";
+			char formatted_diff[20];
+			sprintf(formatted_diff,"%0.0f",diff);
+			if (show_beat_counter) {
+				time_units = "beats";
+				sprintf(formatted_diff,"%0.2f",diff);
+			}
+			printf("\033[1;37mYou have nyaned for %s %s!\033[J\033[0m", formatted_diff, time_units);
 		}
 		/* Reset the last color so that the escape sequences rewrite */
 		last = 0;
